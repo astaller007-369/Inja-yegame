@@ -333,7 +333,7 @@ if globals().get("is_valid_data", False) and not full_validation_df.empty and no
         st.session_state["processed_cache_success"] = True
         st.rerun()
 
-if uploaded_file is None and st.session_state["processed_cache_success"]:
+if uploaded_file_stream is None and st.session_state["processed_cache_success"]:
     st.session_state["processed_cache_success"] = False
 full_validation_df = st.session_state["full_validation_df"]
 # ==============================================================================
