@@ -194,7 +194,7 @@ full_validation_df = st.session_state["full_validation_df"] if not st.session_st
 # ==============================================================================
 # SEGMENT 5 OF 11: UNIVERSAL SCHEMA TRANSLATION ENGINE & NOMENCLATURE SHIELD
 # ==============================================================================
-if uploaded_file is not None:
+if uploaded_file_stream is not None:
     try:
         uploaded_file.seek(0)
         manual_upload_df = pd.read_csv(uploaded_file, engine='python', on_bad_lines='skip')
@@ -340,7 +340,7 @@ if globals().get("is_valid_data", False) and not full_validation_df.empty and no
         st.session_state["processed_cache_success"] = True
         st.rerun()
 
-if uploaded_file is None and st.session_state["processed_cache_success"]:
+if uploaded_file_stream is None and st.session_state["processed_cache_success"]:
     st.session_state["processed_cache_success"] = False
 full_validation_df = st.session_state["full_validation_df"]
 # ==============================================================================
