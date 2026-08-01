@@ -78,7 +78,7 @@ if os.path.exists(backup_dir_folder_path):
 else:
     st.sidebar.info("Vault Directory Standby: Save a ticket to generate partition folder paths.")
 # ==============================================================================
-# SEGMENT 4 OF 11: UNIFIED INGESTION PORT & DIRECT DOMAIN API WEBHOOK 
+# SEGMENT 4 OF 11 (PART 1 OF 2): MANUAL FILE DROPS & API INTERFACE PACKETS
 # ==============================================================================
 st.sidebar.markdown("### 📁 Historical Matchday Upload Port")
 uploaded_file_stream = st.sidebar.file_uploader("Drop your imidlalo.csv or fixture ledger files here:", type=["csv"], key="csv_manual_uploader_v1")
@@ -87,7 +87,6 @@ uploaded_file_stream = st.sidebar.file_uploader("Drop your imidlalo.csv or fixtu
 if "full_validation_df" not in st.session_state: st.session_state["full_validation_df"] = pd.DataFrame()
 if "processed_cache_success" not in st.session_state: st.session_state["processed_cache_success"] = False
 
-# --- FIXED LINE 190 NAME COLLISION PASS ---
 if uploaded_file_stream is not None and not st.session_state["processed_cache_success"]:
     try:
         raw_manual_input_df = pd.read_csv(uploaded_file_stream)
@@ -103,27 +102,32 @@ if uploaded_file_stream is not None and not st.session_state["processed_cache_su
     except Exception as upload_err:
         st.sidebar.error(f"Ingestion Matrix Fault: {upload_err}")
 
-# --- NEW: DIRECT API-SPORTS PHONE GATEWAY (NO RAPIDAPI INTERMEDIARY) ---
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 📡 Direct API-Sports Server Gateway")
-st.sidebar.caption("Automate data updates instantly via direct server-to-server connection:")
+st.sidebar.caption("Surgically select data streams to isolate free tier account limits:")
 
 user_private_api_key = st.sidebar.text_input("Enter Direct API-Sports Key:", type="password", key="ti_apisports_key_phone_v1")
 target_league_id = st.sidebar.number_input("League ID (E.g. EPL = 39, La Liga = 140):", min_value=1, value=39, step=1, key="ni_league_id_phone_v1")
 target_season_year = st.sidebar.number_input("Target Competition Year:", min_value=2020, max_value=2030, value=2026, step=1, key="ni_season_year_phone_v1")
 
+active_api_plan_tier = st.sidebar.selectbox("Your Active API Subscription Plan Level:", ["Free Tier Plan (Single-Call Safety)", "Premium / Paid Tier Plan (Full Deep Metrics)"], key="sb_api_plan_tier_v1")
+
+# --- INDEPENDENT DATA FILTERING CHECKBOXES ---
+st.sidebar.markdown("##### 🎯 Targeted Data Streams:")
+request_past_matches_toggle = st.sidebar.checkbox("⬇️ Ingest PAST Matches (Completed slates)", value=True, key="cb_stream_past_v1")
+request_future_matches_toggle = st.sidebar.checkbox("🔮 Ingest FUTURE Matches (Upcoming schedule)", value=False, key="cb_stream_future_v1")
+# ==============================================================================
+# SEGMENT 4 OF 11 (PART 2 OF 2): INDEPENDENT STATE NETWORK REQUEST LOOPS
+# ==============================================================================
 if st.sidebar.button("🔄 Sync Database via Direct API", key="btn_run_api_sync_phone_v1"):
-    if user_private_api_key:
-        with st.spinner("📡 Connecting directly to v3.football.api-sports.io server..."):
+    if not request_past_matches_toggle and not request_future_matches_toggle:
+        st.sidebar.warning("Please activate at least one data stream checkbox to pull data.")
+    elif user_private_api_key:
+        with st.spinner("📡 Connecting to api-sports server infrastructure..."):
             import requests
             
-            # Upgraded direct domain endpoints routing layer
             url_fixtures = "https://api-sports.io"
-            
-            # --- STAGE 2 HARDENED HANDSHAKE: INJECTED X-APISPORTS-KEY REQUIREMENT ---
-            headers_payload = {
-                "x-apisports-key": user_private_api_key
-            }
+            headers_payload = {"x-apisports-key": str(user_private_api_key).strip()}
             query_parameters = {"league": str(target_league_id), "season": str(target_season_year)}
             
             try:
@@ -131,17 +135,24 @@ if st.sidebar.button("🔄 Sync Database via Direct API", key="btn_run_api_sync_
                 if response.status_code == 200:
                     raw_data = response.json()
                     
-                    # Intercept missing credential account blockades natively
-                    if raw_data.get("errors"):
+                    if raw_data.get("errors") and len(raw_data.get("errors")) > 0:
                         st.sidebar.error(f"API Server Rejection: {raw_data.get('errors')}")
                     else:
                         fixtures_list = raw_data.get("response", [])
                         if fixtures_list:
                             fresh_ingested_rows = []
+                            is_premium_mode = "Premium" in active_api_plan_tier
+                            
+                            # Define active status target arrays dynamically based on checkboxes
+                            allowed_status_codes = []
+                            if request_past_matches_toggle: allowed_status_codes.extend(["FT", "AET", "PEN"])
+                            if request_future_matches_toggle: allowed_status_codes.extend(["NS", "TBD"])
+                            
                             for fx in fixtures_list:
                                 status_short = fx.get("fixture", {}).get("status", {}).get("short")
-                                if status_short not in ["FT", "AET", "PEN"]: continue
+                                if status_short not in allowed_status_codes: continue
                                 
+                                fx_id = fx.get("fixture", {}).get("id")
                                 league_name = fx.get("league", {}).get("name", "UNKNOWN").upper()
                                 country_name = fx.get("league", {}).get("country", "UNKNOWN").upper()
                                 workspace_tag = f"{country_name} {league_name}"
@@ -151,20 +162,51 @@ if st.sidebar.button("🔄 Sync Database via Direct API", key="btn_run_api_sync_
                                 
                                 h_team = fx.get("teams", {}).get("home", {}).get("name")
                                 a_team = fx.get("teams", {}).get("away", {}).get("name")
-                                h_goals = fx.get("goals", {}).get("home", 0)
-                                a_goals = fx.get("goals", {}).get("away", 0)
+                                h_goals = fx.get("goals", {}).get("home")
+                                a_goals = fx.get("goals", {}).get("away")
                                 
-                                # Auto-map parsed vectors straight to your 22-column pro schema variables spectrum
+                                goals_home_parsed = int(h_goals) if h_goals is not None else (np.nan if status_short in ["NS", "TBD"] else 0)
+                                goals_away_parsed = int(a_goals) if a_goals is not None else (np.nan if status_short in ["NS", "TBD"] else 0)
+                                
+                                h_sot, a_sot, h_rc, a_rc, h_possession, a_possession = 4, 3, 0, 0, 0.50, 0.50
+                                
+                                # Deep performance multi-call loop (Fires only if Premium Plan + Past Match matches)
+                                if is_premium_mode and status_short in ["FT", "AET", "PEN"]:
+                                    url_stats = "https://api-sports.io/statistics"
+                                    stats_resp = requests.get(url_stats, headers=headers_payload, params={"fixture": str(fx_id)}, timeout=10)
+                                    if stats_resp.status_code == 200:
+                                        stats_data = stats_resp.json().get("response", [])
+                                        for team_stat in stats_data:
+                                            is_home_team = team_stat.get("team", {}).get("name") == h_team
+                                            metrics_array = team_stat.get("statistics", [])
+                                            for m in metrics_array:
+                                                m_type = m.get("type")
+                                                m_val = m.get("value")
+                                                if isinstance(m_val, str) and "%" in m_val: parsed_val = float(m_val.replace("%", "")) / 100.0
+                                                else: parsed_val = float(m_val) if m_val is not None else 0.0
+                                                    
+                                                if m_type == "Shots on Target":
+                                                    if is_home_team: h_sot = int(parsed_val)
+                                                    else: a_sot = int(parsed_val)
+                                                elif m_type == "Red Cards":
+                                                    if is_home_team: h_rc = int(parsed_val)
+                                                    else: a_rc = int(parsed_val)
+                                                elif m_type == "Ball Possession":
+                                                    if is_home_team: h_possession = parsed_val
+                                                    else: a_possession = parsed_val
+
+                                h_bc = max(1, int(h_sot * 0.3)) if pd.isna(goals_home_parsed) else max(int(goals_home_parsed), int(h_sot * 0.3))
+                                a_bc = max(0, int(a_sot * 0.25)) if pd.isna(goals_away_parsed) else max(int(goals_away_parsed), int(a_sot * 0.25))
+                                
                                 fresh_ingested_rows.append({
                                     "competition": workspace_tag, "match_timestamp": clean_date,
                                     "home_team": h_team, "away_team": a_team,
-                                    "home_goals": int(h_goals if h_goals is not None else 0),
-                                    "away_goals": int(a_goals if a_goals is not None else 0),
-                                    "home_sot": 4, "away_sot": 3, "home_big_chances": 1, "away_big_chances": 1,
-                                    "home_box_touches": 14, "away_box_touches": 11, "home_red_cards": 0, "away_red_cards": 0,
+                                    "home_goals": goals_home_parsed, "away_goals": goals_away_parsed,
+                                    "home_sot": h_sot, "away_sot": a_sot, "home_big_chances": h_bc, "away_big_chances": a_bc,
+                                    "home_box_touches": int(h_sot * 3.5), "away_box_touches": int(a_sot * 3.1), "home_red_cards": h_rc, "away_red_cards": a_rc,
                                     "home_ground_duels_won_pct": 0.50, "away_ground_duels_won_pct": 0.50,
                                     "home_aerial_duels_won_pct": 0.50, "away_aerial_duels_won_pct": 0.50,
-                                    "home_dribbles_won_pct": 0.50, "away_dribbles_won_pct": 0.50,
+                                    "home_dribbles_won_pct": h_possession, "away_dribbles_won_pct": a_possession,
                                     "home_tackles_won_pct": 0.52, "away_tackles_won_pct": 0.52
                                 })
                                 
@@ -180,21 +222,20 @@ if st.sidebar.button("🔄 Sync Database via Direct API", key="btn_run_api_sync_
                                 combined_df.to_csv(storage_path, index=False)
                                 st.session_state["full_validation_df"] = combined_df.copy()
                                 
-                                st.sidebar.success(f"🚀 Direct API Server Ingestion Complete! Parsed {len(fresh_api_df)} rows.")
+                                st.sidebar.success(f"🚀 Stream Synced! Processed {len(fresh_api_df)} target lines into drive storage.")
                                 st.session_state["processed_cache_success"] = False
                                 st.rerun()
-                            else: st.sidebar.warning("API Server Standby: No completed matches discovered for this filter.")
-                        else: st.sidebar.error("API Error: Dataset array empty. Check parameters configuration.")
-                else: st.sidebar.error(f"API Blocked: Server code {response.status_code}")
+                            else: st.sidebar.warning("API Server Standby: No matching fixtures found for this specific state checkbox.")
+                        else: st.sidebar.error("API Error: Dataset stream empty. Verify parameters setup.")
+                else: st.sidebar.error(f"API Blocked: Server code {response.status_code}. Check subscription status.")
             except Exception as api_err: st.sidebar.error(f"Connection Latency: {api_err}")
     else: st.sidebar.warning("Please provide a valid direct API token key to uncouple servers.")
 
-# Load active memory state structures cleanly down into the workspace layers below
 full_validation_df = st.session_state["full_validation_df"] if not st.session_state["full_validation_df"].empty else (pd.read_csv(storage_path) if os.path.exists(storage_path) else pd.DataFrame())
 # ==============================================================================
 # SEGMENT 5 OF 11: UNIVERSAL SCHEMA TRANSLATION ENGINE & NOMENCLATURE SHIELD
 # ==============================================================================
-if uploaded_file_stream is not None:
+if uploaded_file is not None:
     try:
         uploaded_file.seek(0)
         manual_upload_df = pd.read_csv(uploaded_file, engine='python', on_bad_lines='skip')
@@ -340,7 +381,7 @@ if globals().get("is_valid_data", False) and not full_validation_df.empty and no
         st.session_state["processed_cache_success"] = True
         st.rerun()
 
-if uploaded_file_stream is None and st.session_state["processed_cache_success"]:
+if uploaded_file is None and st.session_state["processed_cache_success"]:
     st.session_state["processed_cache_success"] = False
 full_validation_df = st.session_state["full_validation_df"]
 # ==============================================================================
@@ -435,7 +476,7 @@ with st.expander("🛠️ Advanced Calibration & Mathematical Tuning Vault", exp
 
 for idx, league in enumerate(uploaded_leagues):
     st.session_state.freeze_matrix[league.lower().strip()] = st.checkbox(f"Freeze Decay: {league.upper()}", value=st.session_state.freeze_matrix.get(league.lower().strip(), False), key=f"f_{idx}")
-# ==============================================================================
+    # ==============================================================================
 # SEGMENT 8 & 9 OF 11 (PART 1 OF 2): RE-HARDENED UNIQUE ELEMENT WIDGET ARMORE
 # ==============================================================================
 tab_pred, tab_tables, tab_history, tab_past = st.tabs(["📅 PROJECTIONS", "🌍 STANDINGS", "📜 BACKTESTER", "📜 PAST GAMES"])
@@ -505,7 +546,7 @@ with tab_pred:
                     asymmetric_pitch_climate_advantage = st.checkbox("Host Artificial Turf Advantage Active Check", value=False, key="cb_turf_final_v1")
                     asymmetric_pitch_width_advantage = st.checkbox("📐 Host Narrow Pitch Blueprint Surface Active Check", value=False, key="cb_width_final_v1")
                     derby_match_active = st.checkbox("🚨 Flag Entry as Local Derby / High Intensity Rivalry Check", value=False, key="cb_derby_final_v1")
-    # ==============================================================================
+        # ==============================================================================
 # SEGMENT 8 & 9 OF 11 (PART 2 OF 2): MULTI-MARKET BOOKMAKER ODDS ENTRY VAULT
 # ==============================================================================
                 with st.expander("💰 Bookmaker Entry Lines & Odds Setup", expanded=True):
@@ -534,7 +575,7 @@ with tab_pred:
                         odds_ah_away_minus_15 = st.number_input("Asian Handicap Away -1.5 Odds:", min_value=1.01, value=5.50, step=0.10, key="num_oaam15_core")
                         odds_home_cs_y = st.number_input("Home Clean Sheet Yes Odds:", min_value=1.01, value=2.60, step=0.05, key="num_ohcsy_core")
                         odds_away_cs_y = st.number_input("Away Clean Sheet Yes Odds:", min_value=1.01, value=3.90, step=0.05, key="num_oacsy_core")
-                             # ==============================================================================
+# ==============================================================================
 # SEGMENT 10A OF 11: LEFT PANEL INPUT OVERRIDES & FORM SHIFT DIAGNOSTIC MONITOR
 # ==============================================================================
             # --- STEP 1: OPEN WIDESCREEN GRID CHANNELS ---
@@ -600,7 +641,7 @@ with tab_pred:
                         {"Squad Focus": f"{target['away_team'].upper()} (AWAY)", "Metric Axis": "Big Chances (BC)", "Raw 5-Game": f"{a_raw_bc:.2f}", "Weighted Engine": f"{a_weighted_bc:.2f}", "Form Trajectory Signal": derive_trajectory_verdict(a_weighted_bc, a_raw_bc)}
                     ]
                     st.dataframe(pd.DataFrame(diagnostic_rows), use_container_width=True, hide_index=True)
-# ==============================================================================
+            # ==============================================================================
 # SEGMENT 10B OF 11: ENGINE PROBABILITY CALCULATION CORE LAYER
 # ==============================================================================
             # --- STEP 3: RUN THE ADVANCED MATHEMATICAL THREE-STAGE OPTIMIZATION ENGINE ---
@@ -683,7 +724,7 @@ with tab_pred:
             calibrated_baseline_goals = baseline_goals * weather_goals_multiplier
             if "Knockout" in tournament_framework_selection: calibrated_baseline_goals *= 0.88
             if pythagorean_luck_ratio > 0.65: calibrated_baseline_goals *= 0.95 
-                       # ==============================================================================
+# ==============================================================================
 # SEGMENT 10C OF 11 (PART 1 OF 2): ENGINE COMPILATION & 5-COLUMN OPTIONS SHEET
 # ==============================================================================
             # 📍 CORE ENGAGEMENT COMPILATION PASS
@@ -772,7 +813,7 @@ with tab_pred:
             sd = len(past_home) + len(past_away)
             confidence = min(100, int((sd / 10.0) * 100)) if sd > 0 else 50
             qualified_projections = []
-    # ==============================================================================
+# ==============================================================================
 # SEGMENT 10C OF 11 (PART 2 OF 2): RIGHT PANEL INTERFACE DISPLAY LAYOUT
 # ==============================================================================
             # --- STEP 4: RENDER COMPILING TICKETS (RIGHT PANEL) ---
@@ -818,7 +859,7 @@ with tab_pred:
                     st.dataframe(pd.DataFrame(stress_rows), use_container_width=True, hide_index=True)
                 st.markdown("#### 🎫 Complete 22-Market Options Valuation Sheet")
                 st.dataframe(pd.DataFrame(all_markets_rendered_rows), use_container_width=True, hide_index=True)
-                                                                         # ==============================================================================
+                # ==============================================================================
 # SEGMENT 11A OF 11: TELEGRAM BOT PAGER & BANKROLL INVESTMENTS LEDGER
 # ==============================================================================
 st.markdown("---")
@@ -890,7 +931,7 @@ with c_col_r:
     if not display_replicated_ledger_df.empty:
         display_replicated_ledger_df["Cumulative_Units"] = display_replicated_ledger_df["Net_Profit_Units"].cumsum()
         st.line_chart(display_replicated_ledger_df["Cumulative_Units"], use_container_width=True)
-    # ==============================================================================
+        # ==============================================================================
 # SEGMENT 11B (PART 1 OF 2): FIXED STANDINGS WITH GOAL DIFFERENCE & XPTS LEDGER
 # ==============================================================================
 with tab_tables:
@@ -993,7 +1034,7 @@ with tab_tables:
         outright_simulation_scoreboard = {team: 0 for team in all_participating_teams}
         mock_schedule_fixtures = [{"home": h, "away": a} for h in all_participating_teams for a in all_participating_teams if h != a]
         preseason_turnover_rate = 1.15 if is_pre_season_active else 1.00
-            # ==============================================================================
+# ==============================================================================
 # SEGMENT 11B (PART 2 OF 2): SIMULATOR CORE, BSS CALIBRATION & CLV LINE CHART
 # ==============================================================================
         outright_results_rows = []
@@ -1071,3 +1112,4 @@ with tab_past:
             st.dataframe(efficiency_display_df, use_container_width=True, hide_index=True)
         else: st.info("No historical matches found for this filter combination.")
     else: st.info("Database matrix workspace is currently unpopulated.")
+                                                                         
