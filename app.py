@@ -238,7 +238,7 @@ full_validation_df = st.session_state["full_validation_df"] if not st.session_st
 if uploaded_file_stream is not None:
     try:
         uploaded_file.seek(0)
-        manual_upload_df = pd.read_csv(uploaded_file, engine='python', on_bad_lines='skip')
+        manual_upload_df = pd.read_csv(uploaded_file_stream, engine='python', on_bad_lines='skip')
         
         ALIGNED_HEADER_TRANSLATION_MAP = {
             "div": "league_country", "league_name": "league_country", "competition": "league_country",
