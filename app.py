@@ -108,27 +108,69 @@ if uploaded_file_stream is not None and not st.session_state["processed_cache_su
         st.sidebar.error(f"Ingestion Matrix Fault: {upload_err}")
 
 full_validation_df = st.session_state["full_validation_df"] if not st.session_state["full_validation_df"].empty else (pd.read_csv(storage_path) if os.path.exists(storage_path) else pd.DataFrame())
-# ==============================================================================
-# SEGMENT 5 OF 13: FIXED REGEX SCHEMA SHIELD FOR THE 22 CUSTOM HEADER METRICS
+    # ==============================================================================
+# SEGMENT 5 OF 13: ADVANCED FUZZY ALIAS MAPPING CORE & TYPE HARDENER
 # ==============================================================================
 working_pipeline_df = full_validation_df.copy() if not full_validation_df.empty else (pd.read_csv(storage_path) if os.path.exists(storage_path) else pd.DataFrame())
 
 if not working_pipeline_df.empty:
-    # Strict regex cleanser stripping leading/trailing spaces and special characters natively
+    # 1. Clean and normalize raw spreadsheet headers
     working_pipeline_df.columns = [str(c).strip().lower().replace("%", "").replace(" ", "_") for c in working_pipeline_df.columns]
+    raw_headers = list(working_pipeline_df.columns)
     
-    # Direct variable routing pass mapping your custom columns to the computational core
-    if "competition" in working_pipeline_df.columns: working_pipeline_df["league_country"] = working_pipeline_df["competition"]
-    if "date" in working_pipeline_df.columns: working_pipeline_df["match_timestamp"] = pd.to_datetime(working_pipeline_df["date"], errors='coerce').fillna(pd.Timestamp.now())
-    if "home" in working_pipeline_df.columns: working_pipeline_df["home_team"] = working_pipeline_df["home"].astype(str).str.upper().str.strip()
-    if "away" in working_pipeline_df.columns: working_pipeline_df["away_team"] = working_pipeline_df["away"].astype(str).str.upper().str.strip()
+    # 2. Institutional Variant Mapping Grid (Alias Buckets)
+    alias_mapping_grid = {
+        "league_country": ["competition", "league_country", "div", "league", "tournament"],
+        "date_raw": ["date", "match_timestamp", "timestamp", "time", "datetime"],
+        "home_team": ["home", "hometeam", "home_team", "host", "team_1"],
+        "away_team": ["away", "awayteam", "away_team", "visitor", "team_2"],
+        "home_goals": ["home_goals", "home_goals_scored", "home_score", "fthg", "hg", "home_goals_full_time"],
+        "away_goals": ["away_goals", "away_goals_scored", "away_score", "ftag", "ag", "away_goals_full_time"],
+        "home_sot": ["home_sot", "home_shots_on_target", "hst", "home_sot_total"],
+        "away_sot": ["away_sot", "away_shots_on_target", "ast", "away_sot_total"],
+        "home_big_chances": ["home_big_chances", "home_chances", "home_bc", "home_major_chances"],
+        "away_big_chances": ["away_big_chances", "away_chances", "away_bc", "away_major_chances"],
+        "home_box_touches": ["home_box_touches", "home_touches_in_box", "home_penalty_touches"],
+        "away_box_touches": ["away_box_touches", "away_touches_in_box", "away_penalty_touches"],
+        "home_red_cards": ["home_red_cards", "home_reds", "hr", "home_dismissals"],
+        "away_red_cards": ["away_red_cards", "away_reds", "ar", "away_dismissals"]
+    }
     
-    # Map your space-separated goal and shot attributes cleanly
-    if "home_goals" not in working_pipeline_df.columns and "home_goals" in working_pipeline_df.columns:
-        working_pipeline_df["home_goals"] = pd.to_numeric(working_pipeline_df["home_goals"], errors='coerce')
-    if "away_goals" not in working_pipeline_df.columns and "away_goals" in working_pipeline_df.columns:
-        working_pipeline_df["away_goals"] = pd.to_numeric(working_pipeline_df["away_goals"], errors='coerce')
+    # 3. Dynamic Structural Re-Mapping Wrapper Pass
+    for core_target_variable, variant_aliases_list in alias_mapping_grid.items():
+        for alias in variant_aliases_list:
+            if alias in raw_headers:
+                working_pipeline_df[core_target_variable] = working_pipeline_df[alias]
+                break # Break out of loop once the first matching variant name is locked
+                
+    # 4. Standard Casing Cleanups For Key Operational Parameters
+    if "league_country" not in working_pipeline_df.columns:
+        working_pipeline_df["league_country"] = "consensus_league"
+        
+    if "home_team" in working_pipeline_df.columns:
+        working_pipeline_df["home_team"] = working_pipeline_df["home_team"].astype(str).str.upper().str.strip()
+    if "away_team" in working_pipeline_df.columns:
+        working_pipeline_df["away_team"] = working_pipeline_df["away_team"].astype(str).str.upper().str.strip()
 
+    # 5. Type Hardening: Explicitly enforce Numeric Data Types for Auto-Tuners
+    numeric_targets_list = ["home_goals", "away_goals", "home_sot", "away_sot", "home_big_chances", "away_big_chances", "home_box_touches", "away_box_touches", "home_red_cards", "away_red_cards"]
+    for col in numeric_targets_list:
+        if col in working_pipeline_df.columns:
+            working_pipeline_df[col] = pd.to_numeric(working_pipeline_df[col], errors='coerce')
+        else:
+            # Inject empty numeric columns if variant fields are entirely missing from a custom sheet
+            working_pipeline_df[col] = np.nan
+
+    # 6. Type Hardening: Forceful Datetime Conversion Pass (Clears PyArrow TypeError crashes)
+    if "date_raw" in working_pipeline_df.columns:
+        clean_datetime_series = working_pipeline_df["date_raw"].astype(str).str.replace("T", " ").str.strip()
+        working_pipeline_df["match_timestamp"] = pd.to_datetime(clean_datetime_series, errors='coerce')
+    else:
+        working_pipeline_df["match_timestamp"] = pd.Timestamp.now()
+        
+    working_pipeline_df["match_timestamp"] = working_pipeline_df["match_timestamp"].fillna(pd.Timestamp.now())
+
+    # 7. Safe Dedup and Partitioning Pass
     working_pipeline_df.drop_duplicates(subset=["league_country", "match_timestamp", "home_team", "away_team"], keep="last", inplace=True)
     uploaded_leagues = sorted(list(working_pipeline_df["league_country"].dropna().unique()))
 else:
@@ -137,7 +179,9 @@ else:
 
 selected_league_filter = st.selectbox("Select Target League Workspace Selection:", uploaded_leagues)
 filtered_df = working_pipeline_df[working_pipeline_df["league_country"].str.lower().str.strip() == selected_league_filter.lower().strip()].reset_index(drop=True)
-settled_past_games = filtered_df.dropna(subset=["home_goals"]).reset_index(drop=True)
+
+# Safely isolate past history from unplayed upcoming fixtures
+settled_past_games = filtered_df.dropna(subset=["home_goals", "away_goals"]).reset_index(drop=True)
 # ==============================================================================
 # SEGMENT 6 OF 13: BREAK-INSULATED DUAL-UNIT HALF-LIFE AUTO-TUNER CORE
 # ==============================================================================
@@ -266,7 +310,7 @@ class ComprehensivePredictiveRoutingEngine(SisonkeMathematicalCoreEngine):
         return {"market_probabilities": {"1 (Home Win)": prob_home, "X (Draw)": prob_draw, "2 (Away Win)": prob_away}, "raw_matrix": raw_prob_matrix}
 
 engine = ComprehensivePredictiveRoutingEngine()
-    # ==============================================================================
+        # ==============================================================================
 # SEGMENT 8 OF 13: ASYMMETRIC STRATEGIC & ENVIRONMENTAL INTERFACE BUTTONS
 # ==============================================================================
 tab_proj, tab_standings, tab_history, tab_past = st.tabs(["🔮 ACTIVE PROJECTIONS MATRIX", "📋 COMPETITION STANDINGS", "📉 PERFORMANCE BACKTESTER", "📜 HISTORICAL RESULT LEDGER"])
@@ -335,7 +379,7 @@ with tab_proj:
         c9, c10 = st.columns(2)
         odds_over = c9.number_input("Odds Over 2.5:", min_value=1.01, value=1.90, step=0.05)
         odds_under = c10.number_input("Odds Under 2.5:", min_value=1.01, value=1.90, step=0.05)
-        # ==============================================================================
+    # ==============================================================================
 # SEGMENT 9 OF 13: ASYMMETRIC COMPILATION LOOPS & DIXON-COLES RHO INJECTION
 # ==============================================================================
         c11, c12 = st.columns(2)
@@ -397,7 +441,7 @@ with tab_proj:
             prob_home = float(np.sum(np.tril(prob_matrix, -1)))
             prob_draw = float(np.sum(np.diag(prob_matrix)))
             prob_away = float(np.sum(np.triu(prob_matrix, 1)))
-# ==============================================================================
+    # ==============================================================================
 # SEGMENT 10 OF 13: OPTION MATRIX COMPILE ENGINE & OVERROUND DE-JUICER
 # ==============================================================================
             over_25_p = 0.0
@@ -443,7 +487,7 @@ with tab_proj:
                 ("ASIAN HANDICAP (HOME +1.5)", odds_ah_home_plus_15, ah_home_plus_15_p, "LOW COIN-FLIP"), ("ASIAN HANDICAP (AWAY -1.5)", odds_ah_away_minus_15, ah_away_minus_15_p, "HIGH-STOCHASTIC LOTTERY"),
                 ("HOME CLEAN SHEET (YES)", odds_home_cs_y, home_cs_p, "HIGH-STOCHASTIC LOTTERY"), ("AWAY CLEAN SHEET (YES)", odds_away_cs_y, away_cs_p, "HIGH-STOCHASTIC LOTTERY")
         ]
-            # ==============================================================================
+        # ==============================================================================
 # SEGMENT 11 OF 13: 9-COLUMN DATA EXPANSION SHEET & DUAL VISUAL CHARTS
 # ==============================================================================
             with dash_right:
@@ -599,7 +643,7 @@ with tab_standings:
             outright_expected_value = (clamped_prob * user_input_outright_price) - 1.0
             outright_rendered_payload.append({"Competing Squad": team, "Model Win Probability (%)": f"{final_win_probability * 100:.1f}%", "Fair Value Odds Line": f"{fair_zero_margin_odds:.2f}", "Sportsbook Outright Odds": f"{user_input_outright_price:.2f}", "Outright Forecast EV (%)": f"{outright_expected_value * 100:+.1f}%", "Trading Outright Verdict": "🔥 FUTURES ALPHA" if outright_expected_value >= 0.05 else "⚠️ NEGATIVE HOLD"})
         st.dataframe(pd.DataFrame(outright_rendered_payload).sort_values(by="Model Win Probability (%)", ascending=False), use_container_width=True, hide_index=True)
-# ==============================================================================
+    # ==============================================================================
 # SEGMENT 13 OF 13: UNIFIED AUDIT DISPLAY, FORM SHIFTS & DUAL DELTAS LEDGER
 # ==============================================================================
 with tab_history:
@@ -698,4 +742,3 @@ with tab_past:
             efficiency_display_df["match_timestamp"] = pd.to_datetime(efficiency_display_df["match_timestamp"]).dt.strftime('%Y-%m-%d')
             st.write("**Real-World Margin vs. Underlying Structural Proxy Creation Delta Matrix Ledger:**")
             st.dataframe(efficiency_display_df, use_container_width=True, hide_index=True)
-    
