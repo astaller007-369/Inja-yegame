@@ -108,7 +108,7 @@ if uploaded_file_stream is not None and not st.session_state["processed_cache_su
         st.sidebar.error(f"Ingestion Matrix Fault: {upload_err}")
 
 full_validation_df = st.session_state["full_validation_df"] if not st.session_state["full_validation_df"].empty else (pd.read_csv(storage_path) if os.path.exists(storage_path) else pd.DataFrame())
-    # ==============================================================================
+# ==============================================================================
 # SEGMENT 5 OF 13: ADVANCED FUZZY ALIAS MAPPING CORE & TYPE HARDENER
 # ==============================================================================
 working_pipeline_df = full_validation_df.copy() if not full_validation_df.empty else (pd.read_csv(storage_path) if os.path.exists(storage_path) else pd.DataFrame())
@@ -310,7 +310,7 @@ class ComprehensivePredictiveRoutingEngine(SisonkeMathematicalCoreEngine):
         return {"market_probabilities": {"1 (Home Win)": prob_home, "X (Draw)": prob_draw, "2 (Away Win)": prob_away}, "raw_matrix": raw_prob_matrix}
 
 engine = ComprehensivePredictiveRoutingEngine()
-        # ==============================================================================
+# ==============================================================================
 # SEGMENT 8 OF 13: ASYMMETRIC STRATEGIC & ENVIRONMENTAL INTERFACE BUTTONS
 # ==============================================================================
 tab_proj, tab_standings, tab_history, tab_past = st.tabs(["🔮 ACTIVE PROJECTIONS MATRIX", "📋 COMPETITION STANDINGS", "📉 PERFORMANCE BACKTESTER", "📜 HISTORICAL RESULT LEDGER"])
@@ -379,7 +379,7 @@ with tab_proj:
         c9, c10 = st.columns(2)
         odds_over = c9.number_input("Odds Over 2.5:", min_value=1.01, value=1.90, step=0.05)
         odds_under = c10.number_input("Odds Under 2.5:", min_value=1.01, value=1.90, step=0.05)
-    # ==============================================================================
+            # ==============================================================================
 # SEGMENT 9 OF 13: ASYMMETRIC COMPILATION LOOPS & DIXON-COLES RHO INJECTION
 # ==============================================================================
         c11, c12 = st.columns(2)
@@ -441,7 +441,7 @@ with tab_proj:
             prob_home = float(np.sum(np.tril(prob_matrix, -1)))
             prob_draw = float(np.sum(np.diag(prob_matrix)))
             prob_away = float(np.sum(np.triu(prob_matrix, 1)))
-    # ==============================================================================
+# ==============================================================================
 # SEGMENT 10 OF 13: OPTION MATRIX COMPILE ENGINE & OVERROUND DE-JUICER
 # ==============================================================================
             over_25_p = 0.0
@@ -486,8 +486,8 @@ with tab_proj:
                 ("ASIAN HANDICAP (HOME -1.5)", odds_ah_home_minus_15, ah_home_minus_15_p, "HIGH-STOCHASTIC LOTTERY"), ("ASIAN HANDICAP (AWAY +1.5)", odds_ah_away_plus_15, ah_away_plus_15_p, "LOW COIN-FLIP"),
                 ("ASIAN HANDICAP (HOME +1.5)", odds_ah_home_plus_15, ah_home_plus_15_p, "LOW COIN-FLIP"), ("ASIAN HANDICAP (AWAY -1.5)", odds_ah_away_minus_15, ah_away_minus_15_p, "HIGH-STOCHASTIC LOTTERY"),
                 ("HOME CLEAN SHEET (YES)", odds_home_cs_y, home_cs_p, "HIGH-STOCHASTIC LOTTERY"), ("AWAY CLEAN SHEET (YES)", odds_away_cs_y, away_cs_p, "HIGH-STOCHASTIC LOTTERY")
-        ]
-        # ==============================================================================
+    ]
+    # ==============================================================================
 # SEGMENT 11 OF 13: 9-COLUMN DATA EXPANSION SHEET & DUAL VISUAL CHARTS
 # ==============================================================================
             with dash_right:
@@ -561,7 +561,7 @@ with tab_proj:
                     all_markets_rendered_rows.append({"Betting Market": label, "Bookmaker Odds": f"{b_odds:.2f}", "De-Juiced Fair Odds": f"{de_juiced_fair_odds:.2f}", "Model Probability": f"{m_prob*100:.1f}%", "Model Edge (%)": f"{calculated_flat_edge*100:+.1f}%", "Expected Value (EV)": f"{calculated_yielding_ev*100:+.1f}%", "Flag Trigger Status": flag_verdict_label, "Recommended Action": action_string, "Market Volatility Tier": risk_tier})
                 st.markdown("#### 🎫 Complete 9-Column Options Valuation Sheet")
                 st.dataframe(pd.DataFrame(all_markets_rendered_rows), use_container_width=True, hide_index=True)
-    # ==============================================================================
+# ==============================================================================
 # SEGMENT 12 OF 13: MULTI-VARIATE LEADERBOARDS & ADVANCED OUTRIGHT SIMULATORS
 # ==============================================================================
 with tab_standings:
@@ -643,7 +643,7 @@ with tab_standings:
             outright_expected_value = (clamped_prob * user_input_outright_price) - 1.0
             outright_rendered_payload.append({"Competing Squad": team, "Model Win Probability (%)": f"{final_win_probability * 100:.1f}%", "Fair Value Odds Line": f"{fair_zero_margin_odds:.2f}", "Sportsbook Outright Odds": f"{user_input_outright_price:.2f}", "Outright Forecast EV (%)": f"{outright_expected_value * 100:+.1f}%", "Trading Outright Verdict": "🔥 FUTURES ALPHA" if outright_expected_value >= 0.05 else "⚠️ NEGATIVE HOLD"})
         st.dataframe(pd.DataFrame(outright_rendered_payload).sort_values(by="Model Win Probability (%)", ascending=False), use_container_width=True, hide_index=True)
-    # ==============================================================================
+        # ==============================================================================
 # SEGMENT 13 OF 13: UNIFIED AUDIT DISPLAY, FORM SHIFTS & DUAL DELTAS LEDGER
 # ==============================================================================
 with tab_history:
