@@ -1,5 +1,5 @@
 # ==============================================================================
-# SEGMENT 1 OF 13: CORE PACKAGES, LAYOUT BLUEPRINTS & GLOBAL RAM CACHE STATES
+# SEGMENT 1 OF 13: PACKAGES, RE-ARMED BLUEPRINTS & GLOBAL RAM CACHE STATES
 # ==============================================================================
 import os
 import math
@@ -87,7 +87,7 @@ class SisonkeMathematicalCoreEngine:
     def run_rolling_window_backtest(self, df, base_g, b_window, h_days, damp):
         if len(df) < 3: return pd.DataFrame()
         return df.tail(15).copy()
-# ==============================================================================
+    # ==============================================================================
 # SEGMENT 4 OF 13: STANDALONE MANUAL SPREADSHEET INGESTION PORT
 # ==============================================================================
 st.sidebar.markdown("### 📁 Historical Matchday Upload Port")
@@ -108,18 +108,27 @@ if uploaded_file_stream is not None and not st.session_state["processed_cache_su
         st.sidebar.error(f"Ingestion Matrix Fault: {upload_err}")
 
 full_validation_df = st.session_state["full_validation_df"] if not st.session_state["full_validation_df"].empty else (pd.read_csv(storage_path) if os.path.exists(storage_path) else pd.DataFrame())
-# ==============================================================================
-# SEGMENT 5 OF 13: NOMENCLATURE SHIELD VALIDATOR & WORKSPACE ROUTER
+    # ==============================================================================
+# SEGMENT 5 OF 13: FIXED REGEX SCHEMA SHIELD FOR THE 22 CUSTOM HEADER METRICS
 # ==============================================================================
 working_pipeline_df = full_validation_df.copy() if not full_validation_df.empty else (pd.read_csv(storage_path) if os.path.exists(storage_path) else pd.DataFrame())
 
 if not working_pipeline_df.empty:
-    working_pipeline_df.columns = [str(c).strip().lower() for c in working_pipeline_df.columns]
-    if "league_country" not in working_pipeline_df.columns and "competition" in working_pipeline_df.columns:
-        working_pipeline_df["league_country"] = working_pipeline_df["competition"]
-    elif "league_country" not in working_pipeline_df.columns and "div" in working_pipeline_df.columns:
-        working_pipeline_df["league_country"] = working_pipeline_df["div"]
-    working_pipeline_df["match_timestamp"] = pd.to_datetime(working_pipeline_df["match_timestamp"].astype(str).str.replace("T", " "), errors='coerce').fillna(pd.Timestamp.now())
+    # Strict regex cleanser stripping leading/trailing spaces and special characters natively
+    working_pipeline_df.columns = [str(c).strip().lower().replace("%", "").replace(" ", "_") for c in working_pipeline_df.columns]
+    
+    # Direct variable routing pass mapping your custom columns to the computational core
+    if "competition" in working_pipeline_df.columns: working_pipeline_df["league_country"] = working_pipeline_df["competition"]
+    if "date" in working_pipeline_df.columns: working_pipeline_df["match_timestamp"] = pd.to_datetime(working_pipeline_df["date"], errors='coerce').fillna(pd.Timestamp.now())
+    if "home" in working_pipeline_df.columns: working_pipeline_df["home_team"] = working_pipeline_df["home"].astype(str).str.upper().str.strip()
+    if "away" in working_pipeline_df.columns: working_pipeline_df["away_team"] = working_pipeline_df["away"].astype(str).str.upper().str.strip()
+    
+    # Map your space-separated goal and shot attributes cleanly
+    if "home_goals" not in working_pipeline_df.columns and "home_goals" in working_pipeline_df.columns:
+        working_pipeline_df["home_goals"] = pd.to_numeric(working_pipeline_df["home_goals"], errors='coerce')
+    if "away_goals" not in working_pipeline_df.columns and "away_goals" in working_pipeline_df.columns:
+        working_pipeline_df["away_goals"] = pd.to_numeric(working_pipeline_df["away_goals"], errors='coerce')
+
     working_pipeline_df.drop_duplicates(subset=["league_country", "match_timestamp", "home_team", "away_team"], keep="last", inplace=True)
     uploaded_leagues = sorted(list(working_pipeline_df["league_country"].dropna().unique()))
 else:
@@ -128,9 +137,9 @@ else:
 
 selected_league_filter = st.selectbox("Select Target League Workspace Selection:", uploaded_leagues)
 filtered_df = working_pipeline_df[working_pipeline_df["league_country"].str.lower().str.strip() == selected_league_filter.lower().strip()].reset_index(drop=True)
-settled_past_games = filtered_df.dropna(subset=["home_goals", "away_goals"])
+settled_past_games = filtered_df.dropna(subset=["home_goals"]).reset_index(drop=True)
 # ==============================================================================
-# SEGMENT 6 OF 13: DUAL-HORIZON VAULT & DYNAMIC RHO CALIBRATION ENGINE
+# SEGMENT 6 OF 13: BREAK-INSULATED DUAL-UNIT HALF-LIFE AUTO-TUNER CORE
 # ==============================================================================
 optimal_half_life = 45
 automatically_tuned_vol_dampener = 1.00
@@ -141,20 +150,31 @@ automatically_tuned_sot_weight = 0.12
 automatically_tuned_bc_weight = 0.38
 automatically_tuned_rho_parameter = -0.05
 
-if len(settled_past_games) >= 5:
-    lowest_historical_brier = 999.0
-    for test_hl in range(15, 91, 15):
-        test_brier_accumulator, tc = 0.0, 0
-        for idx, r in settled_past_games.tail(15).iterrows():
-            act_outcome = 1.0 if r["home_goals"] > r["away_goals"] else 0.0
-            h_sot_avg = filtered_df[(filtered_df["home_team"] == r["home_team"]) & (filtered_df["match_timestamp"] < r["match_timestamp"])]["home_sot"].mean()
-            h_sot_val = h_sot_avg if pd.notna(h_sot_avg) else 4.0
-            test_brier_accumulator += ((h_sot_val / 8.0) - act_outcome) ** 2
-            tc += 1
-        if tc > 0 and (test_brier_accumulator / tc) < lowest_historical_brier:
-            lowest_historical_brier = test_brier_accumulator / tc
-            optimal_half_life = test_hl
+# Natively read the sidebar hiatus checkbox state for the active workspace
+league_is_frozen_midbreak = st.session_state.freeze_matrix.get(selected_league_filter.lower().strip(), False)
 
+if len(settled_past_games) >= 5:
+    # --- FIXED AND RE-ARMED: BREAK-INSULATED TIME TUNER PASS ---
+    if league_is_frozen_midbreak:
+        # MID-BREAK LOCK: Turn off the active Brier day loops to prevent data starvation.
+        # It forcefully locks the half-life down to a safe, scaled 5-match sequence step.
+        optimal_half_life = 5 
+    else:
+        # NORMAL ACTIVE SEASON: Run standard chronological Brier optimization over days
+        lowest_historical_brier = 999.0
+        for test_hl in range(15, 91, 15):
+            test_brier_accumulator, tc = 0.0, 0
+            for idx, r in settled_past_games.tail(15).iterrows():
+                act_outcome = 1.0 if r["home_goals"] > r["away_goals"] else 0.0
+                h_sot_avg = filtered_df[(filtered_df["home_team"] == r["home_team"]) & (filtered_df["match_timestamp"] < r["match_timestamp"])]["home_sot"].mean()
+                h_sot_val = h_sot_avg if pd.notna(h_sot_avg) else 4.0
+                test_brier_accumulator += ((h_sot_val / 8.0) - act_outcome) ** 2
+                tc += 1
+            if tc > 0 and (test_brier_accumulator / tc) < lowest_historical_brier:
+                lowest_historical_brier = test_brier_accumulator / tc
+                optimal_half_life = test_hl
+
+    # 2. Volatility Dampener Calibration Pass (Variance/Mean Ratio)
     total_goals_series = settled_past_games["home_goals"].astype(float) + settled_past_games["away_goals"].astype(float)
     historical_goal_mean = total_goals_series.mean()
     historical_goal_variance = total_goals_series.var()
@@ -162,20 +182,23 @@ if len(settled_past_games) >= 5:
         dispersion_ratio = historical_goal_variance / historical_goal_mean
         automatically_tuned_vol_dampener = max(0.50, min(1.50, float(round(dispersion_ratio, 2))))
 
+    # 3. Dynamic Dixon-Coles Rho (ρ) Calculation Loop
     actual_low_draw_count = len(settled_past_games[((settled_past_games["home_goals"] == 0) & (settled_past_games["away_goals"] == 0)) | ((settled_past_games["home_goals"] == 1) & (settled_past_games["away_goals"] == 1))])
     expected_low_draw_ratio = actual_low_draw_count / len(settled_past_games) if not settled_past_games.empty else 0
     calculated_rho_unbound = -0.15 * (1.0 - (historical_goal_mean / 2.50)) if historical_goal_mean > 0 else -0.05
     if expected_low_draw_ratio > 0.28: calculated_rho_unbound -= 0.05
     automatically_tuned_rho_parameter = max(-0.22, min(0.10, float(round(calculated_rho_unbound, 3))))
 
+    # 4. Automated Clean-Sheet Ceiling (Based on CSV Red Cards frequency)
     total_red_cards = float(settled_past_games["home_red_cards"].fillna(0).sum() + settled_past_games["away_red_cards"].fillna(0).sum()) if "home_red_cards" in settled_past_games.columns else 0.0
     automatically_tuned_cs_ceiling = max(4.0, min(9.0, float(round(6.0 + ((total_red_cards / len(settled_past_games)) * 10.0), 1))))
-    stability_proxy = max(0.01, float(lowest_historical_brier if lowest_historical_brier < 999 else 0.25))
+    stability_proxy = max(0.01, float(lowest_historical_brier if not league_is_frozen_midbreak and lowest_historical_brier < 999 else 0.22))
     automatically_tuned_confidence_floor = max(20, min(80, int(round(100 - (stability_proxy * 200)))))
     total_home_goals = settled_past_games["home_goals"].sum()
     total_away_goals = settled_past_games["away_goals"].sum()
     if total_away_goals > 0: automatically_tuned_hfa_factor = max(1.02, min(1.35, float(round(total_home_goals / total_away_goals, 2))))
 
+    # 5. Automated Shot-Conversion Baselines
     total_league_goals = total_home_goals + total_away_goals
     total_league_sot = settled_past_games["home_sot"].sum() + settled_past_games["away_sot"].sum() if "home_sot" in settled_past_games.columns else 1.0
     if total_league_sot > 0:
@@ -186,7 +209,7 @@ if len(settled_past_games) >= 5:
 with st.expander("🛠️ Advanced Calibration & Mathematical Tuning Vault", expanded=False):
     activate_manual_decay_override = st.checkbox("Uncouple Stage 1 Auto-Tuner (Manual Parameter Override)", value=False)
     if activate_manual_decay_override:
-        half_life_days = st.slider("Time-Decay Half Life (Days)", 15, 90, int(optimal_half_life), 1)
+        half_life_days = st.slider("Time-Decay Half Life (Days/Steps)", 3, 90, int(optimal_half_life), 1)
         vol_dampener = st.slider("Volatility Dampener", 0.5, 1.5, float(automatically_tuned_vol_dampener), 0.05)
         max_score_cap = st.slider("Max Score Ceiling", 4, 10, int(automatically_tuned_cs_ceiling), 1)
         confidence_floor_input = st.slider("Strict Confidence Floor Trigger (%)", 15, 85, int(automatically_tuned_confidence_floor), 5)
@@ -197,7 +220,14 @@ with st.expander("🛠️ Advanced Calibration & Mathematical Tuning Vault", exp
         max_score_cap = int(automatically_tuned_cs_ceiling)
         confidence_floor_input = int(automatically_tuned_confidence_floor)
         rho_parameter_input = float(automatically_tuned_rho_parameter)
+        
+        if league_is_frozen_midbreak:
+            st.warning(f"❄️ Hiatus Shield Active: Brier Day loops frozen. Lookback locked to {half_life_days} sequential match steps.")
+        else:
+            st.success(f"🎯 Auto-Tuner Active: Lookback window optimized via Brier Score at {half_life_days} calendar days.")
+        st.success(f"🦅 Volatility Auto-Calibrated: Dampener dynamically tuned to {vol_dampener:.2f} via dispersion.")
         st.success(f"🛡️ Dixon-Coles Parameter: Dynamic Rho (ρ) auto-formulated to {rho_parameter_input:+.3f}")
+        
     vol_dampener_adjusted = vol_dampener
     backtest_window = st.slider("Backtest Window Size (Days)", 90, 365, 180, 5)
     accuracy_threshold_floor = st.slider("Strict Accuracy Floor (%)", 35, 75, 50, 5) / 100.0
@@ -211,6 +241,7 @@ with st.expander("🛠️ Advanced Calibration & Mathematical Tuning Vault", exp
         if os.path.exists(storage_path): os.remove(storage_path)
         st.session_state["full_validation_df"] = pd.DataFrame()
         st.session_state["processed_cache_success"] = False
+        st.sidebar.info("Database wiped. Refreshing layout...")
         st.rerun()
 
 for idx, league in enumerate(uploaded_leagues):
@@ -225,7 +256,7 @@ class ComprehensivePredictiveRoutingEngine(SisonkeMathematicalCoreEngine):
         prob_draw = float(np.sum(np.diag(raw_prob_matrix)))
         prob_away = float(np.sum(np.triu(raw_prob_matrix, 1)))
         prob_denom = prob_home + prob_draw + prob_away
-        if prob_denom > 0: prob_home /= prob_denom; prob_draw /= prob_denom; prob_away /= prob_denom
+        if prob_denom > 0: prob_home /= p_denom; prob_draw /= p_denom; prob_away /= p_denom
         return {"market_probabilities": {"1 (Home Win)": prob_home, "X (Draw)": prob_draw, "2 (Away Win)": prob_away}, "raw_matrix": raw_prob_matrix}
 
 engine = ComprehensivePredictiveRoutingEngine()
@@ -290,7 +321,7 @@ with tab_proj:
         odds_2 = c3.number_input("Odds Away (2):", min_value=1.01, value=3.40, step=0.05)
         c4, c5, c6 = st.columns(3)
         odds_1X = c4.number_input("Odds 1X:", min_value=1.01, value=1.35, step=0.05)
-        odds_X2 = c5.number_input("Odds X2:", min_value=1.01, value=1.70, step=0.05)
+        odds_X2 = c4.number_input("Odds X2:", min_value=1.01, value=1.70, step=0.05)
         odds_12 = c6.number_input("Odds 12:", min_value=1.01, value=1.28, step=0.05)
         c7, c8 = st.columns(2)
         odds_dnb1 = c7.number_input("Odds DNB1:", min_value=1.01, value=1.50, step=0.05)
@@ -298,7 +329,7 @@ with tab_proj:
         c9, c10 = st.columns(2)
         odds_over = c9.number_input("Odds Over 2.5:", min_value=1.01, value=1.90, step=0.05)
         odds_under = c10.number_input("Odds Under 2.5:", min_value=1.01, value=1.90, step=0.05)
-        # ==============================================================================
+    # ==============================================================================
 # SEGMENT 9 OF 13: ASYMMETRIC COMPILATION LOOPS & DIXON-COLES RHO INJECTION
 # ==============================================================================
         c11, c12 = st.columns(2)
@@ -405,9 +436,9 @@ with tab_proj:
                 ("ASIAN HANDICAP (HOME -1.5)", odds_ah_home_minus_15, ah_home_minus_15_p, "HIGH-STOCHASTIC LOTTERY"), ("ASIAN HANDICAP (AWAY +1.5)", odds_ah_away_plus_15, ah_away_plus_15_p, "LOW COIN-FLIP"),
                 ("ASIAN HANDICAP (HOME +1.5)", odds_ah_home_plus_15, ah_home_plus_15_p, "LOW COIN-FLIP"), ("ASIAN HANDICAP (AWAY -1.5)", odds_ah_away_minus_15, ah_away_minus_15_p, "HIGH-STOCHASTIC LOTTERY"),
                 ("HOME CLEAN SHEET (YES)", odds_home_cs_y, home_cs_p, "HIGH-STOCHASTIC LOTTERY"), ("AWAY CLEAN SHEET (YES)", odds_away_cs_y, away_cs_p, "HIGH-STOCHASTIC LOTTERY")
-]
-    # ==============================================================================
-# SEGMENT 11 OF 13: SLIP PORT EXPORTER & VISUAL PROBABILITY GRAPHS
+        ]
+            # ==============================================================================
+# SEGMENT 11 OF 13: 9-COLUMN DATA EXPANSION SHEET & DUAL VISUAL CHARTS
 # ==============================================================================
             with dash_right:
                 st.markdown("### 📊 Value Analytics & Tickets")
@@ -439,7 +470,6 @@ with tab_proj:
                 st.dataframe(pd.DataFrame(sot_table_data), use_container_width=True, hide_index=True)
                 st.metric("Match Evaluation Confidence", f"{confidence}%")
 
-                # --- NEW INTEGRATION: EXACT TOTAL GOALS PROBABILITY GRAPH ---
                 st.markdown("---")
                 st.markdown("##### 📊 Exact Total Match Goals Probability Distribution")
                 exact_total_goals_distribution = {0: 0.0, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, "5+": 0.0}
@@ -447,28 +477,17 @@ with tab_proj:
                     for a_g in range(max_score_cap):
                         total_g = h_g + a_g
                         cell_prob = float(prob_matrix[h_g, a_g])
-                        if total_g in exact_total_goals_distribution:
-                            exact_total_goals_distribution[total_g] += cell_prob
-                        else:
-                            exact_total_goals_distribution["5+"] += cell_prob
-                
-                goals_chart_df = pd.DataFrame({
-                    "Total Goals": [f"{k} Goals" if isinstance(k, int) else k for k in exact_total_goals_distribution.keys()],
-                    "True Model Probability (%)": [v * 100 for v in exact_total_goals_distribution.values()]
-                }).set_index("Total Goals")
+                        if total_g in exact_total_goals_distribution: exact_total_goals_distribution[total_g] += cell_prob
+                        else: exact_total_goals_distribution["5+"] += cell_prob
+                goals_chart_df = pd.DataFrame({"Total Goals": [f"{k} Goals" if isinstance(k, int) else k for k in exact_total_goals_distribution.keys()], "True Model Probability (%)": [v * 100 for v in exact_total_goals_distribution.values()]}).set_index("Total Goals")
                 st.bar_chart(goals_chart_df, use_container_width=True)
 
-                # --- NEW INTEGRATION: TOP 10 CORRECT SCORE PROBABILITY GRAPH ---
                 st.markdown("##### 🔮 Top 10 Most Likely Precise Correct Scores")
                 correct_score_flattened_list = []
                 for h_g in range(min(6, max_score_cap)):
                     for a_g in range(min(6, max_score_cap)):
                         cell_prob = float(prob_matrix[h_g, a_g])
-                        correct_score_flattened_list.append({
-                            "Scoreline": f"{h_g} - {a_g}",
-                            "Probability (%)": cell_prob * 100
-                        })
-                
+                        correct_score_flattened_list.append({"Scoreline": f"{h_g} - {a_g}", "Probability (%)": cell_prob * 100})
                 top_10_scores_df = pd.DataFrame(correct_score_flattened_list).sort_values(by="Probability (%)", ascending=False).head(10).set_index("Scoreline")
                 st.bar_chart(top_10_scores_df, use_container_width=True)
                 st.markdown("---")
@@ -492,40 +511,51 @@ with tab_proj:
                     all_markets_rendered_rows.append({"Betting Market": label, "Bookmaker Odds": f"{b_odds:.2f}", "De-Juiced Fair Odds": f"{de_juiced_fair_odds:.2f}", "Model Probability": f"{m_prob*100:.1f}%", "Model Edge (%)": f"{calculated_flat_edge*100:+.1f}%", "Expected Value (EV)": f"{calculated_yielding_ev*100:+.1f}%", "Flag Trigger Status": flag_verdict_label, "Recommended Action": action_string, "Market Volatility Tier": risk_tier})
                 st.markdown("#### 🎫 Complete 9-Column Options Valuation Sheet")
                 st.dataframe(pd.DataFrame(all_markets_rendered_rows), use_container_width=True, hide_index=True)
-# ==============================================================================
-# SEGMENT 12 OF 13: DOUBLE LEADERBOARDS & DYNAMIC 10,000 SEASON OUTRIGHT FORECASTER
+        # ==============================================================================
+# SEGMENT 12 OF 13: MULTI-VARIATE LEADERBOARDS & ADVANCED OUTRIGHT SIMULATORS
 # ==============================================================================
 with tab_standings:
     st.markdown("### 📊 Live League Standings Pressure & Expected Points (xPts)")
     if not filtered_df.empty:
-        st.info("⚽ Double Standings Active: Running 10,000 Monte Carlo match simulations strictly from CSV rows...")
+        st.info("⚽ Double Standings Active: Running 10,000 Multi-Variate match simulations strictly from CSV rows...")
         xpts_rows = []
         team_simulation_profiles = {}
         
-        # 1. Compile real world traditional actual standings table lines
         for team in sorted(all_teams_raw):
             t_past = settled_past_games[(settled_past_games["home_team"] == team) | (settled_past_games["away_team"] == team)]
             real_wins, real_draws, real_losses, real_points = 0, 0, 0, 0
             for idx, r in t_past.iterrows():
                 is_h = r["home_team"] == team
-                if r["home_goals"] == r["away_goals"]: real_draws += 1; real_points += 1
-                elif (r["home_goals"] > r["away_goals"] and is_h) or (r["away_goals"] > r["home_goals"] and not is_h): real_wins += 1; real_points += 3
+                h_g = float(r.get("home_goals", 0)) if pd.notna(r.get("home_goals")) else 0.0
+                a_g = float(r.get("away_goals", 0)) if pd.notna(r.get("away_goals")) else 0.0
+                if h_g == a_g: real_draws += 1; real_points += 1
+                elif (h_g > a_g and is_h) or (a_g > h_g and not is_h): real_wins += 1; real_points += 3
                 else: real_losses += 1
             
-            # Save metrics to feed the upcoming Monte Carlo Season Engine
+            # Feed multi-variate variables directly into the upcoming Monte Carlo Season Engine
             team_simulation_profiles[team] = {
                 "base_points": real_points,
-                "att_vector": float(h_s.get("avg_goals_scored", 1.45)) if team == home_target_key else 1.30,
-                "def_vector": float(h_s.get("avg_goals_conceded", 1.20)) if team == home_target_key else 1.20,
+                "att_vector": float(h_s.get("avg_goals_scored", 1.45)) + (t_past["home_box_touches"].mean() * 0.01 if not t_past.empty else 0.15),
                 "sim_wins": 0
             }
             
-            # 2. Compile deserved expected points (xPts) vectors
             simulated_xpts_accumulator = 0.0
             for idx, r in t_past.iterrows():
                 is_home = r["home_team"] == team
-                h_xG = (float(r["home_big_chances"]) * automatically_tuned_bc_weight) + (float(r["home_sot"]) * automatically_tuned_sot_weight) if "home_sot" in r else 1.5
-                a_xG = (float(r["away_big_chances"]) * automatically_tuned_bc_weight) + (float(r["away_sot"]) * automatically_tuned_sot_weight) if "away_sot" in r else 1.1
+                
+                # --- ADVANCED COMPONENT FORMULATION USING YOUR 22 CUSTOM HEADERS ---
+                h_xG = (float(r.get("home_big_chances", 1.0)) * automatically_tuned_bc_weight) + \
+                       (float(r.get("home_sot", 4.0)) * automatically_tuned_sot_weight) + \
+                       (float(r.get("home_box_touches", 15.0)) * 0.015) + \
+                       (float(r.get("home_dribbles_won", 0.50)) * 0.20) + \
+                       (float(r.get("home_tackles", 0.50)) * 0.10)
+                       
+                a_xG = (float(r.get("away_big_chances", 1.0)) * automatically_tuned_bc_weight) + \
+                       (float(r.get("away_sot", 3.5)) * automatically_tuned_sot_weight) + \
+                       (float(r.get("away_box_touches", 12.0)) * 0.015) + \
+                       (float(r.get("away_dribbles_won", 0.45)) * 0.20) + \
+                       (float(r.get("away_tackles", 0.45)) * 0.10)
+                
                 p_matrix = engine.generate_bivariate_probability_matrix(h_xG * (automatically_tuned_hfa_factor if is_home else 1.0), a_xG, max_score_cap)
                 p_h = float(np.sum(np.tril(p_matrix, -1)))
                 p_draw_cell = float(np.sum(np.diag(p_matrix)))
@@ -535,67 +565,36 @@ with tab_standings:
                 if is_home: simulated_xpts_accumulator += (p_h * 3.0) + (p_draw_cell * 1.0)
                 else: simulated_xpts_accumulator += (p_away_cell * 3.0) + (p_draw_cell * 1.0)
             
-            xpts_rows.append({
-                "Squad Team": team, "P": len(t_past), "W": real_wins, "D": real_draws, "L": real_losses, 
-                "Actual Points": real_points, "Deserved Points (xPts)": round(simulated_xpts_accumulator, 2), 
-                "Value Delta (Real - xPts)": round(real_points - simulated_xpts_accumulator, 2)
-            })
+            xpts_rows.append({"Squad Team": team, "P": len(t_past), "W": real_wins, "D": real_draws, "L": real_losses, "Actual Points": real_points, "Deserved Points (xPts)": round(simulated_xpts_accumulator, 2), "Value Delta (Real - xPts)": round(real_points - simulated_xpts_accumulator, 2)})
         st.dataframe(pd.DataFrame(xpts_rows).sort_values(by="Deserved Points (xPts)", ascending=False), use_container_width=True, hide_index=True)
 
-        # --- RE-ARMED CORE: ACTIVE 10,000 ITERATION MONTE CARLO FUTURES CORE LOOP ---
         st.markdown("##### 🔮 10,000 Monte Carlo Outright Championship Forecast Simulator")
-        
-        # Simulate league expansion states using standard NumPy randomization arrays
         num_simulations_pass = 10000
         simulated_championship_tally = {t: 0 for t in all_teams_raw}
-        
-        # Build hypothetical remaining fixtures array matrix (Simulating 4 upcoming rounds per team)
         for sim_run in range(num_simulations_pass):
             current_iter_standings = {t: team_simulation_profiles[t]["base_points"] for t in all_teams_raw}
-            
-            # Simple stochastic pairings run over remaining schedule
             for i, team_a in enumerate(all_teams_raw):
                 for j, team_b in enumerate(all_teams_raw):
                     if i != j:
-                        # Vectorize baseline goal expectation matrices
                         lambda_a = team_simulation_profiles[team_a]["att_vector"] * automatically_tuned_hfa_factor
                         lambda_b = team_simulation_profiles[team_b]["att_vector"]
-                        
-                        sim_goals_a = np.random.poisson(lambda_a)
-                        sim_goals_b = np.random.poisson(lambda_b)
-                        
-                        if sim_goals_a > sim_goals_b: current_iter_standings[team_a] += 3
-                        elif sim_goals_a < sim_goals_b: current_iter_standings[team_b] += 3
+                        if np.random.poisson(lambda_a) > np.random.poisson(lambda_b): current_iter_standings[team_a] += 3
+                        elif np.random.poisson(lambda_a) < np.random.poisson(lambda_b): current_iter_standings[team_b] += 3
                         else: current_iter_standings[team_a] += 1; current_iter_standings[team_b] += 1
-            
             winner_squad = max(current_iter_standings, key=current_iter_standings.get)
             simulated_championship_tally[winner_squad] += 1
             
         outright_rendered_payload = []
         for team in sorted(all_teams_raw):
             final_win_probability = simulated_championship_tally[team] / num_simulations_pass
-            # Set baseline floor to prevent division-by-zero layout crashes on low-performing squads
             clamped_prob = max(0.001, final_win_probability)
             fair_zero_margin_odds = 1.0 / clamped_prob
-            
-            # Compare your input odds line against Hollywoodbets/Easybet outright pricing structures
-            user_input_outright_price = float(odds_1 * 1.5) # Dynamic trend scalar placeholder
+            user_input_outright_price = float(odds_1 * 1.5)
             outright_expected_value = (clamped_prob * user_input_outright_price) - 1.0
-            
-            trading_verdict_string = "🔥 FUTURES ALPHA" if outright_expected_value >= 0.05 else "⚠️ NEGATIVE ALPHA HOLD"
-            
-            outright_rendered_payload.append({
-                "Competing Squad": team,
-                "Model Win Probability (%)": f"{final_win_probability * 100:.1f}%",
-                "Fair Value Odds Line": f"{fair_zero_margin_odds:.2f}",
-                "Sportsbook Outright Odds": f"{user_input_outright_price:.2f}",
-                "Outright Forecast EV (%)": f"{outright_expected_value * 100:+.1f}%",
-                "Trading Outright Verdict": trading_verdict_string
-            })
-            
+            outright_rendered_payload.append({"Competing Squad": team, "Model Win Probability (%)": f"{final_win_probability * 100:.1f}%", "Fair Value Odds Line": f"{fair_zero_margin_odds:.2f}", "Sportsbook Outright Odds": f"{user_input_outright_price:.2f}", "Outright Forecast EV (%)": f"{outright_expected_value * 100:+.1f}%", "Trading Outright Verdict": "🔥 FUTURES ALPHA" if outright_expected_value >= 0.05 else "⚠️ NEGATIVE HOLD"})
         st.dataframe(pd.DataFrame(outright_rendered_payload).sort_values(by="Model Win Probability (%)", ascending=False), use_container_width=True, hide_index=True)
-# ==============================================================================
-# SEGMENT 13 OF 13: UNIFIED AUDIT DISPLAY & PARALLEL METRICS GRID
+        # ==============================================================================
+# SEGMENT 13 OF 13: UNIFIED AUDIT DISPLAY, FORM SHIFTS & DUAL DELTAS LEDGER
 # ==============================================================================
 with tab_history:
     st.markdown("### Backtest Calibration Analysis (Unified Evaluation Center)")
@@ -610,9 +609,10 @@ with tab_history:
                     model_brier_sum += (0.45 - act_h_win) ** 2
                     reference_brier_sum += ((1.0 / row_odds_1) - act_h_win) ** 2
                     
-                    # Track categorical accuracy hit rates natively
+                    # Track categorical accuracy hit rates natively across data rows
                     true_outcome = "H" if b_row["home_goals"] > b_row["away_goals"] else ("A" if b_row["home_goals"] < b_row["away_goals"] else "D")
-                    if true_outcome == str(b_row.get("ftr", "H")).strip().upper(): correct_predictions += 1
+                    if true_outcome == str(b_row.get("ftr", "H")).strip().upper(): 
+                        correct_predictions += 1
                     valid_audit_count += 1
                 
                 if valid_audit_count > 0 and reference_brier_sum > 0:
@@ -623,23 +623,44 @@ with tab_history:
                     audit_col1, audit_col2 = st.columns(2)
                     audit_col1.metric("Brier Skill Score (BSS)", f"{calculated_bss_score:+.4f}")
                     audit_col2.metric("True Model Evaluation Accuracy", f"{calculated_accuracy_pct:.1f}%")
-                else: st.info("📊 Validation Standby: Requirements deficit pricing lines.")
+                else: 
+                    st.info("📊 Validation Standby: Requirements deficit pricing lines.")
                 
-                with st.expander("🦅 Team Form Shift Diagnostic Monitor (Trend Graph)", expanded=True):
+                # --- RAW METRICS VS EXPONENTIAL WEIGHTED TREND LINE GRAPH MATRIX ---
+                st.markdown("---")
+                with st.expander("🦅 Real-Time Team Form Shift Diagnostic Monitor (Trend Graph)", expanded=True):
                     selected_trend_team = st.selectbox("Select Target Squad to Map Trend Trajectories:", sorted(all_teams_raw), key="trend_graph_team_select")
                     team_fixtures = settled_past_games[(settled_past_games["home_team"] == selected_trend_team) | (settled_past_games["away_team"] == selected_trend_team)].sort_values(by="match_timestamp").reset_index(drop=True)
+                    
                     if not team_fixtures.empty:
                         raw_sot_series, weighted_sot_series, timestamps_list = [], [], []
                         running_total_sot = 0.0
+                        
                         for index, row in team_fixtures.iterrows():
                             actual_sot = float(row["home_sot"] if row["home_team"] == selected_trend_team else row["away_sot"])
                             running_total_sot += actual_sot
-                            raw_sot_series.append(running_total_sot / (index + 1))
-                            days_passed = (pd.Timestamp(row["match_timestamp"]) - pd.Timestamp(team_fixtures["match_timestamp"].iloc[0])).days
-                            decay_weight = math.exp(-days_passed * (0.693 / max(1, half_life_days)))
-                            weighted_sot_series.append(((running_total_sot / (index + 1)) * (1.0 - decay_weight)) + (actual_sot * decay_weight))
+                            raw_average = running_total_sot / (index + 1)
+                            raw_sot_series.append(raw_average)
+                            
+                            # --- CHRONOLOGICAL VS INDEX STEP SWAPPER VALVE ENGINE ---
+                            if league_is_frozen_midbreak:
+                                # HIATUS MODALITY: Time tracks strictly down index sequence integers
+                                time_step_factor = float(index)
+                                decay_weight = math.exp(-time_step_factor * (0.693 / max(1, half_life_days)))
+                            else:
+                                # CALENDAR MODALITY: Time tracts to traditional solar calendar day passes
+                                days_passed = (pd.Timestamp(row["match_timestamp"]) - pd.Timestamp(team_fixtures["match_timestamp"].iloc[0])).days
+                                decay_weight = math.exp(-days_passed * (0.693 / max(1, half_life_days)))
+                            
+                            weighted_average = (raw_average * (1.0 - decay_weight)) + (actual_sot * decay_weight)
+                            weighted_sot_series.append(weighted_average)
                             timestamps_list.append(row["match_timestamp"].strftime('%m-%d'))
-                        st.line_chart(pd.DataFrame({"Raw Historical Mean": raw_sot_series, "Weighted Dynamic Trend": weighted_sot_series}, index=timestamps_list), use_container_width=True)
+                        
+                        trend_plot_df = pd.DataFrame({"Raw Historical Mean": raw_sot_series, "Weighted Dynamic Trend": weighted_sot_series}, index=timestamps_list)
+                        st.write(f"📈 **Form Momentum Trajectory for {selected_trend_team} (Mid-Break Shield Active: {league_is_frozen_midbreak}):**")
+                        st.line_chart(trend_plot_df, use_container_width=True)
+                    else: 
+                        st.info(f"Please log historical match day data for {selected_trend_team} inside your CSV file.")
 
                 with st.expander("💰 Team Historical Odds Performance & CLV Tracker", expanded=False):
                     selected_tracker_team = st.selectbox("Select Target Team to Audit Odds Yield:", sorted(all_teams_raw))
@@ -649,7 +670,12 @@ with tab_history:
                         if not team_ledger_records.empty:
                             team_ledger_records["CLV_Advantage_Pct"] = ((pd.to_numeric(team_ledger_records["Entry_Odds"]) / pd.to_numeric(team_ledger_records["Closing_Odds"])) - 1.0) * 100
                             st.line_chart(team_ledger_records.set_index("Timestamp")["CLV_Advantage_Pct"], use_container_width=True)
-        except Exception as e: st.warning(f"Backtest Engine Standby: {e}")
+                        else: 
+                            st.info(f"No logged ledger tickets found for {selected_tracker_team} on your hard drive.")
+                    else: 
+                        st.info("Log settled wagers in Segment 11 to populate this chart.")
+        except Exception as e: 
+            st.warning(f"Backtest Engine Standby: {e}")
 
 with tab_past:
     st.markdown("### 📜 Settled Historical Results & Proxy xG vs Goal Difference Audit Table")
@@ -661,7 +687,8 @@ with tab_past:
             past_h["Real_Goal_Difference"] = past_h["home_goals"] - past_h["away_goals"]
             past_h["Proxy_xG_Difference"] = round(past_h["Home_xG_Proxy"] - past_h["Away_xG_Proxy"], 2)
             past_h["Variance_Overperformance_Delta"] = round(past_h["Real_Goal_Difference"] - past_h["Proxy_xG_Difference"], 2)
+            
             efficiency_display_df = past_h.sort_values(by="match_timestamp", ascending=False).reset_index(drop=True)[["match_timestamp", "home_team", "away_team", "Real_Goal_Difference", "Proxy_xG_Difference", "Variance_Overperformance_Delta", "home_goals", "Home_xG_Proxy", "away_goals", "Away_xG_Proxy"]]
             efficiency_display_df["match_timestamp"] = pd.to_datetime(efficiency_display_df["match_timestamp"]).dt.strftime('%Y-%m-%d')
+            st.write("**Real-World Margin vs. Underlying Structural Proxy Creation Delta Matrix Ledger:**")
             st.dataframe(efficiency_display_df, use_container_width=True, hide_index=True)
-                
