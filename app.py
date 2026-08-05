@@ -87,7 +87,7 @@ class SisonkeMathematicalCoreEngine:
     def run_rolling_window_backtest(self, df, base_g, b_window, h_days, damp):
         if len(df) < 3: return pd.DataFrame()
         return df.tail(15).copy()
-    # ==============================================================================
+# ==============================================================================
 # SEGMENT 4 OF 13: STANDALONE MANUAL SPREADSHEET INGESTION PORT
 # ==============================================================================
 st.sidebar.markdown("### 📁 Historical Matchday Upload Port")
@@ -108,7 +108,7 @@ if uploaded_file_stream is not None and not st.session_state["processed_cache_su
         st.sidebar.error(f"Ingestion Matrix Fault: {upload_err}")
 
 full_validation_df = st.session_state["full_validation_df"] if not st.session_state["full_validation_df"].empty else (pd.read_csv(storage_path) if os.path.exists(storage_path) else pd.DataFrame())
-    # ==============================================================================
+# ==============================================================================
 # SEGMENT 5 OF 13: FIXED REGEX SCHEMA SHIELD FOR THE 22 CUSTOM HEADER METRICS
 # ==============================================================================
 working_pipeline_df = full_validation_df.copy() if not full_validation_df.empty else (pd.read_csv(storage_path) if os.path.exists(storage_path) else pd.DataFrame())
@@ -247,7 +247,7 @@ with st.expander("🛠️ Advanced Calibration & Mathematical Tuning Vault", exp
 for idx, league in enumerate(uploaded_leagues):
     st.session_state.freeze_matrix[league.lower().strip()] = st.checkbox(f"Freeze Decay: {league.upper()}", value=st.session_state.freeze_matrix.get(league.lower().strip(), False), key=f"f_{idx}")
 # ==============================================================================
-# SEGMENT 7 OF 13: ADVANCED PROJECTIONS ROUTING WRAPPER PIPELINE
+# SEGMENT 7 OF 13: FIXED SYNTAX WRAPPER (ELIMINATES THE DENOMINATOR MATRIX BUG)
 # ==============================================================================
 class ComprehensivePredictiveRoutingEngine(SisonkeMathematicalCoreEngine):
     def predict_match_probabilities(self, df, h_team, a_team, ts, base_g, h_att, a_att, h_stat, a_stat, max_c, damp, skip_flag=False):
@@ -255,8 +255,14 @@ class ComprehensivePredictiveRoutingEngine(SisonkeMathematicalCoreEngine):
         prob_home = float(np.sum(np.tril(raw_prob_matrix, -1)))
         prob_draw = float(np.sum(np.diag(raw_prob_matrix)))
         prob_away = float(np.sum(np.triu(raw_prob_matrix, 1)))
+        
+        # FIXED: Standardized to use prob_denom cleanly across all normalization steps
         prob_denom = prob_home + prob_draw + prob_away
-        if prob_denom > 0: prob_home /= p_denom; prob_draw /= p_denom; prob_away /= p_denom
+        if prob_denom > 0: 
+            prob_home /= prob_denom
+            prob_draw /= prob_denom
+            prob_away /= prob_denom
+            
         return {"market_probabilities": {"1 (Home Win)": prob_home, "X (Draw)": prob_draw, "2 (Away Win)": prob_away}, "raw_matrix": raw_prob_matrix}
 
 engine = ComprehensivePredictiveRoutingEngine()
@@ -329,7 +335,7 @@ with tab_proj:
         c9, c10 = st.columns(2)
         odds_over = c9.number_input("Odds Over 2.5:", min_value=1.01, value=1.90, step=0.05)
         odds_under = c10.number_input("Odds Under 2.5:", min_value=1.01, value=1.90, step=0.05)
-    # ==============================================================================
+        # ==============================================================================
 # SEGMENT 9 OF 13: ASYMMETRIC COMPILATION LOOPS & DIXON-COLES RHO INJECTION
 # ==============================================================================
         c11, c12 = st.columns(2)
@@ -511,7 +517,7 @@ with tab_proj:
                     all_markets_rendered_rows.append({"Betting Market": label, "Bookmaker Odds": f"{b_odds:.2f}", "De-Juiced Fair Odds": f"{de_juiced_fair_odds:.2f}", "Model Probability": f"{m_prob*100:.1f}%", "Model Edge (%)": f"{calculated_flat_edge*100:+.1f}%", "Expected Value (EV)": f"{calculated_yielding_ev*100:+.1f}%", "Flag Trigger Status": flag_verdict_label, "Recommended Action": action_string, "Market Volatility Tier": risk_tier})
                 st.markdown("#### 🎫 Complete 9-Column Options Valuation Sheet")
                 st.dataframe(pd.DataFrame(all_markets_rendered_rows), use_container_width=True, hide_index=True)
-        # ==============================================================================
+    # ==============================================================================
 # SEGMENT 12 OF 13: MULTI-VARIATE LEADERBOARDS & ADVANCED OUTRIGHT SIMULATORS
 # ==============================================================================
 with tab_standings:
@@ -593,7 +599,7 @@ with tab_standings:
             outright_expected_value = (clamped_prob * user_input_outright_price) - 1.0
             outright_rendered_payload.append({"Competing Squad": team, "Model Win Probability (%)": f"{final_win_probability * 100:.1f}%", "Fair Value Odds Line": f"{fair_zero_margin_odds:.2f}", "Sportsbook Outright Odds": f"{user_input_outright_price:.2f}", "Outright Forecast EV (%)": f"{outright_expected_value * 100:+.1f}%", "Trading Outright Verdict": "🔥 FUTURES ALPHA" if outright_expected_value >= 0.05 else "⚠️ NEGATIVE HOLD"})
         st.dataframe(pd.DataFrame(outright_rendered_payload).sort_values(by="Model Win Probability (%)", ascending=False), use_container_width=True, hide_index=True)
-        # ==============================================================================
+# ==============================================================================
 # SEGMENT 13 OF 13: UNIFIED AUDIT DISPLAY, FORM SHIFTS & DUAL DELTAS LEDGER
 # ==============================================================================
 with tab_history:
@@ -692,3 +698,4 @@ with tab_past:
             efficiency_display_df["match_timestamp"] = pd.to_datetime(efficiency_display_df["match_timestamp"]).dt.strftime('%Y-%m-%d')
             st.write("**Real-World Margin vs. Underlying Structural Proxy Creation Delta Matrix Ledger:**")
             st.dataframe(efficiency_display_df, use_container_width=True, hide_index=True)
+    
