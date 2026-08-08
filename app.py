@@ -68,7 +68,7 @@ class SisonkeMathematicalCoreEngine:
         metrics_payload["avg_goals_scored"] = all_past_rows["home_goals"].mean() if not home_games.empty else all_past_rows["away_goals"].mean()
         metrics_payload["avg_goals_conceded"] = all_past_rows["away_goals"].mean() if not home_games.empty else all_past_rows["home_goals"].mean()
         
-        # Pull box touhes, tackles%, and dribbles% parameters cleanly for the FPE calculations
+        # Pull box touches, tackles%, and dribbles% parameters cleanly for the FPE calculations
         metrics_payload["avg_box_touches_created"] = all_past_rows["home_box_touches"].mean() if not home_games.empty else all_past_rows["away_box_touches"].mean()
         metrics_payload["avg_tackles_pct"] = all_past_rows["home_tackles"].mean() if not home_games.empty else all_past_rows["away_tackles"].mean()
         metrics_payload["avg_dribbles_pct"] = all_past_rows["home_dribbles"].mean() if not home_games.empty else all_past_rows["away_dribbles"].mean()
@@ -113,7 +113,7 @@ class SisonkeMathematicalCoreEngine:
     def run_rolling_window_backtest(self, df, base_g, b_window, h_days, damp):
         if len(df) < 3: return pd.DataFrame()
         return df.tail(15).copy()
-    # ==============================================================================
+# ==============================================================================
 # SEGMENT 4 OF 14: PERSISTENT LOCAL FILE STORAGE BRIDGE (ANTI-RAM CACHE WIPE)
 # ==============================================================================
 st.sidebar.markdown("### 📁 Historical Matchday Upload Port")
@@ -421,7 +421,7 @@ class ComprehensivePredictiveRoutingEngine(SisonkeMathematicalCoreEngine):
         return round((bracket_wins_count / bracket_matches_count) * 100.0, 1), bracket_wins_count, bracket_matches_count
 
 engine = ComprehensivePredictiveRoutingEngine()
-# ==============================================================================
+    # ==============================================================================
 # SEGMENT 8 OF 14: ASYMMETRIC CONTROLS & TEAM-SPECIFIC TURNOVER CHECKBOXES
 # ==============================================================================
 tab_proj, tab_standings, tab_history, tab_past = st.tabs(["🔮 ACTIVE PROJECTIONS MATRIX", "📋 COMPETITION STANDINGS", "📉 PERFORMANCE BACKTESTER", "📜 HISTORICAL RESULT LEDGER"])
@@ -598,7 +598,7 @@ with tab_proj:
             prob_home = float(np.sum(np.tril(prob_matrix, -1)))
             prob_draw = float(np.sum(np.diag(prob_matrix)))
             prob_away = float(np.sum(np.triu(prob_matrix, 1)))
-# ==============================================================================
+    # ==============================================================================
 # SEGMENT 10 OF 14: ALTERNATIVE OPTION MARKET MATRIX GENERATOR
 # ==============================================================================
             over_25_p = 0.0
@@ -643,8 +643,8 @@ with tab_proj:
                 ("ASIAN HANDICAP (HOME -1.5)", odds_ah_home_minus_15, ah_home_minus_15_p, "HIGH-STOCHASTIC LOTTERY"), ("ASIAN HANDICAP (AWAY +1.5)", odds_ah_away_plus_15, ah_away_plus_15_p, "LOW COIN-FLIP"),
                 ("ASIAN HANDICAP (HOME +1.5)", odds_ah_home_plus_15, ah_home_plus_15_p, "LOW COIN-FLIP"), ("ASIAN HANDICAP (AWAY -1.5)", odds_ah_away_minus_15, ah_away_minus_15_p, "HIGH-STOCHASTIC LOTTERY"),
                 ("HOME CLEAN SHEET (YES)", odds_home_cs_y, home_cs_p, "HIGH-STOCHASTIC LOTTERY"), ("AWAY CLEAN SHEET (YES)", odds_away_cs_y, away_cs_p, "HIGH-STOCHASTIC LOTTERY")
-                ]
-                # ==============================================================================
+    ]
+            # ==============================================================================
 # SEGMENT 11 OF 14: MULTI-MARKET PERSISTENT CLV LOGGER & REASONING CORE
 # ==============================================================================
             with dash_right:
@@ -726,7 +726,7 @@ with tab_proj:
                 else: reasoning_verdict_string += f"A heavy tactical gridlock is detected via low-scoring over-dispersion margins, heavily inflating the probability mass of the main draw matrix cells. "
                 reasoning_verdict_string += f"Tournament context modality locked onto `{active_tournament_format_stage}` with an auto-tuned variance dampener scale of `{automatically_tuned_vol_dampener:.2f}`."
                 st.help(reasoning_verdict_string)
-    # ==============================================================================
+        # ==============================================================================
 # SEGMENT 12 OF 14: GRAPH CABINET EXPANDERS & FPE-EQUIPPED VALUATION SHEET
 # ==============================================================================
                 with st.expander("🔮 View Matrix Distribution & Probability Trajectory Graphs", expanded=True):
@@ -794,7 +794,7 @@ with tab_proj:
                     })
                 st.markdown("#### 🎫 Complete FPE-Equipped 10-Column Options Valuation Sheet")
                 st.dataframe(pd.DataFrame(all_markets_rendered_rows), use_container_width=True, hide_index=True)
-    # ==============================================================================
+        # ==============================================================================
 # SEGMENT 13 OF 14: DOUBLE LEADERBOARDS & DYNAMIC 10,000 SEASON OUTRIGHTS
 # ==============================================================================
 with tab_standings:
@@ -864,7 +864,7 @@ with tab_standings:
             outright_expected_value = (clamped_prob * user_input_outright_price) - 1.0
             outright_rendered_payload.append({"Competing Squad": team, "Model Win Probability (%)": f"{final_win_probability * 100:.1f}%", "Fair Value Odds Line": f"{fair_zero_margin_odds:.2f}", "Sportsbook Outright Odds": f"{user_input_outright_price:.2f}", "Outright Forecast EV (%)": f"{outright_expected_value * 100:+.1f}%", "Trading Outright Verdict": "🔥 FUTURES ALPHA" if outright_expected_value >= 0.05 else "⚠️ NEGATIVE HOLD"})
         st.dataframe(pd.DataFrame(outright_rendered_payload).sort_values(by="Model Win Probability (%)", ascending=False), use_container_width=True, hide_index=True)
-            # ==============================================================================
+    # ==============================================================================
 # SEGMENT 14 OF 14: UNIFIED AUDIT DISPLAY & HARD HARD-DISK CLV CURVES
 # ==============================================================================
 with tab_history:
