@@ -154,7 +154,7 @@ if uploaded_file_stream is not None:
         st.sidebar.error(f"Local Storage Write Fault: {write_disk_err}")
 
 full_validation_df = st.session_state.get("full_validation_df", pd.DataFrame())
-    # ==============================================================================
+# ==============================================================================
 # SEGMENT 5 OF 14: ADVANCED FUZZY ALIAS MAPPING CORE & TYPE HARDENER
 # ==============================================================================
 working_pipeline_df = full_validation_df.copy() if not full_validation_df.empty else (pd.read_csv(storage_path) if os.path.exists(storage_path) else pd.DataFrame())
@@ -352,7 +352,7 @@ with st.expander("🛠️ Advanced Calibration & Mathematical Tuning Vault", exp
 
 for idx, league in enumerate(uploaded_leagues):
     st.session_state.freeze_matrix[league.lower().strip()] = st.checkbox(f"Freeze Decay: {league.upper()}", value=st.session_state.freeze_matrix.get(league.lower().strip(), False), key=f"f_{idx}")
-# ==============================================================================
+        # ==============================================================================
 # SEGMENT 7 OF 14: TOURNAMENT STRUCTURE WRAPPER & STREAK MATH ENGINES
 # ==============================================================================
 class ComprehensivePredictiveRoutingEngine(SisonkeMathematicalCoreEngine):
@@ -421,7 +421,7 @@ class ComprehensivePredictiveRoutingEngine(SisonkeMathematicalCoreEngine):
         return round((bracket_wins_count / bracket_matches_count) * 100.0, 1), bracket_wins_count, bracket_matches_count
 
 engine = ComprehensivePredictiveRoutingEngine()
-    # ==============================================================================
+# ==============================================================================
 # SEGMENT 8 OF 14: ASYMMETRIC CONTROLS & TEAM-SPECIFIC TURNOVER CHECKBOXES
 # ==============================================================================
 tab_proj, tab_standings, tab_history, tab_past = st.tabs(["🔮 ACTIVE PROJECTIONS MATRIX", "📋 COMPETITION STANDINGS", "📉 PERFORMANCE BACKTESTER", "📜 HISTORICAL RESULT LEDGER"])
@@ -598,7 +598,7 @@ with tab_proj:
             prob_home = float(np.sum(np.tril(prob_matrix, -1)))
             prob_draw = float(np.sum(np.diag(prob_matrix)))
             prob_away = float(np.sum(np.triu(prob_matrix, 1)))
-    # ==============================================================================
+        # ==============================================================================
 # SEGMENT 10 OF 14: ALTERNATIVE OPTION MARKET MATRIX GENERATOR
 # ==============================================================================
             over_25_p = 0.0
@@ -643,9 +643,9 @@ with tab_proj:
                 ("ASIAN HANDICAP (HOME -1.5)", odds_ah_home_minus_15, ah_home_minus_15_p, "HIGH-STOCHASTIC LOTTERY"), ("ASIAN HANDICAP (AWAY +1.5)", odds_ah_away_plus_15, ah_away_plus_15_p, "LOW COIN-FLIP"),
                 ("ASIAN HANDICAP (HOME +1.5)", odds_ah_home_plus_15, ah_home_plus_15_p, "LOW COIN-FLIP"), ("ASIAN HANDICAP (AWAY -1.5)", odds_ah_away_minus_15, ah_away_minus_15_p, "HIGH-STOCHASTIC LOTTERY"),
                 ("HOME CLEAN SHEET (YES)", odds_home_cs_y, home_cs_p, "HIGH-STOCHASTIC LOTTERY"), ("AWAY CLEAN SHEET (YES)", odds_away_cs_y, away_cs_p, "HIGH-STOCHASTIC LOTTERY")
-    ]
-            # ==============================================================================
-# SEGMENT 11 OF 14: MULTI-MARKET PERSISTENT CLV LOGGER & REASONING CORE
+        ]
+        # ==============================================================================
+# SEGMENT 11 OF 14: MULTI-MARKET PERSISTENT CLV LOGGER & FIXED REASONING CARD
 # ==============================================================================
             with dash_right:
                 st.markdown("### 📊 Value Analytics & Tickets")
@@ -657,7 +657,7 @@ with tab_proj:
                 h_freq_pct, h_freq_w, h_freq_tot = engine.calculate_historical_odds_win_frequency(filtered_df, home_target_key, odds_1)
                 a_freq_pct, a_freq_w, a_freq_tot = engine.calculate_historical_odds_win_frequency(filtered_df, away_target_key, odds_2)
                 
-                # --- CALCULATE EXPERT FIELD PENETRATION EFFICIENCY (FPE) RATIONALLY ---
+                # Calculate Field Penetration Efficiency (FPE)
                 h_fpe = (h_s["avg_box_touches_created"] / max(0.1, h_s["avg_dribbles_pct"])) * 0.1
                 a_fpe = (a_s["avg_box_touches_created"] / max(0.1, a_s["avg_dribbles_pct"])) * 0.1
                 
@@ -718,15 +718,16 @@ with tab_proj:
                     f"Conversely, **{away_target_key}** demonstrates an empirical victory rate of **{a_freq_pct}%** inside their corresponding `{odds_2:.2f}` pricing tier bracket ({a_freq_w}/{a_freq_tot}). "
                 )
                 
-                # Highlight tactical field penetration efficiency ratios explicitly in the rationale box
                 reasoning_verdict_string += f"**Field Penetration Efficiency (FPE) Analytics:** Host FPE is tracked at `{h_fpe:.2f}` vs Visitor FPE of `{a_fpe:.2f}`. This accurately isolates heavy penalty-box domain force from sterile sideways back-half passing strings. "
                 
                 if prob_home > 0.45: reasoning_verdict_string += f"Host **{home_target_key}** holds spatial dominance with superior box touch density, reinforced by their current `{h_streak_label}` form vector. "
                 elif prob_away > 0.45: reasoning_verdict_string += f"Visitor **{away_target_key}** features elite clinical finishing velocity, making them highly dangerous in this structural tier window. "
                 else: reasoning_verdict_string += f"A heavy tactical gridlock is detected via low-scoring over-dispersion margins, heavily inflating the probability mass of the main draw matrix cells. "
                 reasoning_verdict_string += f"Tournament context modality locked onto `{active_tournament_format_stage}` with an auto-tuned variance dampener scale of `{automatically_tuned_vol_dampener:.2f}`."
-                st.help(reasoning_verdict_string)
-        # ==============================================================================
+                
+                # FIXED: Swapped out broken st.help() for a clean, professional st.info() text block
+                st.info(reasoning_verdict_string)
+    # ==============================================================================
 # SEGMENT 12 OF 14: GRAPH CABINET EXPANDERS & FPE-EQUIPPED VALUATION SHEET
 # ==============================================================================
                 with st.expander("🔮 View Matrix Distribution & Probability Trajectory Graphs", expanded=True):
@@ -794,7 +795,7 @@ with tab_proj:
                     })
                 st.markdown("#### 🎫 Complete FPE-Equipped 10-Column Options Valuation Sheet")
                 st.dataframe(pd.DataFrame(all_markets_rendered_rows), use_container_width=True, hide_index=True)
-        # ==============================================================================
+            # ==============================================================================
 # SEGMENT 13 OF 14: DOUBLE LEADERBOARDS & DYNAMIC 10,000 SEASON OUTRIGHTS
 # ==============================================================================
 with tab_standings:
@@ -864,7 +865,7 @@ with tab_standings:
             outright_expected_value = (clamped_prob * user_input_outright_price) - 1.0
             outright_rendered_payload.append({"Competing Squad": team, "Model Win Probability (%)": f"{final_win_probability * 100:.1f}%", "Fair Value Odds Line": f"{fair_zero_margin_odds:.2f}", "Sportsbook Outright Odds": f"{user_input_outright_price:.2f}", "Outright Forecast EV (%)": f"{outright_expected_value * 100:+.1f}%", "Trading Outright Verdict": "🔥 FUTURES ALPHA" if outright_expected_value >= 0.05 else "⚠️ NEGATIVE HOLD"})
         st.dataframe(pd.DataFrame(outright_rendered_payload).sort_values(by="Model Win Probability (%)", ascending=False), use_container_width=True, hide_index=True)
-    # ==============================================================================
+                # ==============================================================================
 # SEGMENT 14 OF 14: UNIFIED AUDIT DISPLAY & HARD HARD-DISK CLV CURVES
 # ==============================================================================
 with tab_history:
@@ -903,7 +904,11 @@ with tab_history:
                             actual_sot = float(row["home_sot"] if row["home_team"] == selected_trend_team else row["away_sot"])
                             running_total_sot += actual_sot
                             raw_sot_series.append(running_total_sot / (index + 1))
-                            days_passed = (pd.Timestamp(row["match_timestamp"]) - pd.Timestamp(team_fixtures["match_timestamp"].iloc)).days
+                            
+                            # --- FIXED: HARD CAST TO TIMESTAMP STRINGS TO CLEAR CONVERSION ERROR ---
+                            anchor_date = pd.Timestamp(team_fixtures["match_timestamp"].iloc[0])
+                            days_passed = (pd.Timestamp(row["match_timestamp"]) - anchor_date).days
+                            
                             decay_weight = math.exp(-days_passed * (0.693 / max(1, half_life_days)))
                             weighted_sot_series.append(((running_total_sot / (index + 1)) * (1.0 - decay_weight)) + (actual_sot * decay_weight))
                             timestamps_list.append(row["match_timestamp"].strftime('%m-%d'))
